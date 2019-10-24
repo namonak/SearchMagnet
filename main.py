@@ -13,9 +13,31 @@ keyword = "윈도우10"
 url = "https://www.google.co.kr/search?hl=ko&source=hp&q={}+torrent&oq={}+torrent".format(keyword, keyword)
 r = requests.get(url, headers=header)
 bs = BeautifulSoup(r.content, "lxml")
-# BeautifulSoup의 Select는 리스트 자료형으로 리턴을 한다. (데이터가 복수개가 될 수 있음을 의미함)
+# BeautifulSoup의 select는 리스트 자료형으로 리턴을 한다. (데이터가 복수개가 될 수 있음을 의미함)
+# Google의 검색 결과는 <div class="g"> 에 저장되기 때문에 select로 div.g에 해당하는 값만 parsing 한다.
 divs = bs.select("div.g")
 
+magnets = []
+
 for d in divs:
-    print(d)
-    print("\n")
+    alink = d.select("div.r > a")[0]
+    title = alink.select("h3")[0].text
+    href = alink.get("href")
+
+    r = requests.get(href)
+    bs = BeautifulSoup(r.content, "lxml")
+    all_links = bs.select("a")
+
+    for a in all_links:
+        g_link = a.get("href")
+        # a 태그에 href 가 항상 있는건은 아니기 때문에 예외처리한다.
+        if g_link is None:
+            continue
+        if g_link.find("magnet:?") >= 0:
+            magnets.append({
+                "title": title,
+                "href": href,
+                "magnet": g_link,
+            })
+
+print(magnets)
