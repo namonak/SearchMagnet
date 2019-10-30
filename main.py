@@ -1,9 +1,10 @@
 '''
-pip install requests beautifulsoup4 lxml
+pip install requests beautifulsoup4 lxml flask
 '''
 import requests
 from bs4 import BeautifulSoup
 from flask import Flask
+from flask import render_template_string
 
 app = Flask(__name__)
 
@@ -43,10 +44,18 @@ def search_magnet():
                     "href": href,
                     "magnet": g_link,
                 })
+    return magnets
 
 @app.route("/")
 def index():
-    return "OK"
+    magnets = search_magnet()
+    HTML = '''
+    {% for m in magnets %}
+    <li><a href="{{m.magnet}}" target="_blank">{{m.title}}</a></li>
+    {% endfor %}
+    '''
+
+    return render_template_string(HTML, **{"magnets": magnets})
 
 if __name__ == "__main__":
-    app.run(host="0,0,0,0", port=5678, debug=True)
+    app.run(host="0.0.0.0", port=5678, debug=True)
