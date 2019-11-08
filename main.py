@@ -36,7 +36,7 @@ def search_magnet():
         for a in all_links:
             g_link = a.get("href")
             # a 태그에 href 가 항상 있는건은 아니기 때문에 예외처리한다.
-            if g_link is None:
+            if not g_link: #if g_link is None:
                 continue
             if g_link.find("magnet:?") >= 0:
                 magnets.append({
